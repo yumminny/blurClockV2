@@ -170,15 +170,6 @@ io.on('connection', (socket) => {
         kill(sunClock.pid);
       }
     });
-
-    /*socket.stdout.on("data", (data) => {
-      console.log(`dataOut: ${data}`);
-    });
-
-    socket.stderr.on("data", data => {
-      console.log(`stderr: ${data}`);
-    });*/
-
 });
 
 
