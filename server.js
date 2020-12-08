@@ -153,16 +153,8 @@ io.on('connection', (socket) => {
     //SunClock
     socket.on('startSunClock', async () => {
       console.log('start sun clock');
-      sunClock = spawn("python3", ["./sunClock.py", dataOut.sunRise]);
-      console.log('sendig sunclock' + dataOut.sunRise)
-
-      sunClock.stdout.on("data", (data) => {
-        console.log(`dataOut: ${data}`);
-      });
-
-      // sunClock.stderr.on("data", data => {
-      //   console.log(`stderr: ${data}`);
-      // });
+      console.log('sendig sunclock' + dataOut.sunRise);
+      sunClock = spawn("sudo", ["python3","./sunClock.py", dataOut.sunRise], {stdio: 'inherit'});
 
       sunClock.on("error", (error) => {
         console.log(`error: ${error.message}`);
@@ -178,6 +170,14 @@ io.on('connection', (socket) => {
         kill(sunClock.pid);
       }
     });
+
+    /*socket.stdout.on("data", (data) => {
+      console.log(`dataOut: ${data}`);
+    });
+
+    socket.stderr.on("data", data => {
+      console.log(`stderr: ${data}`);
+    });*/
 
 });
 
