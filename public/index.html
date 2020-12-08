@@ -9,16 +9,23 @@
   <body>
     <h3>Enter A Zip Code</h3>
     <input type = "text" id="zipInput">
-    <button id ="submit">submit</button><br>
-
-    <button id = "startSunClock">start sun clock</button>
-    <button id = "endSunClock">end sun clock</button><br>
-    <button id = "runClock">run clock</button>
-    <button id = "killClock">end clock</button><br>
-    <button id = "startBlurClock">start blur clock</button>
-    <button id = "endBlurClock">end blur clock</button><br>
-    <button id = "moveMotorForward"> + </button>
-    <button id = "moveMotorBackward"> - </button>
+    <button id ="submit">submit</button><br><br>
+    <div id = "sunClockDiv">Sun Clock
+      <button id = "startSunClock">Start</button>
+      <button id = "endSunClock">End</button><br>
+    </div>
+    <div id ="clockDiv">Clock
+      <button id = "runClock">Start</button>
+      <button id = "killClock">End</button><br>
+    </div>
+    <div id ="blurClockDiv">Blur Clock
+      <button id = "startBlurClock">Start</button>
+      <button id = "endBlurClock">End</button><br>
+    </div>
+    <div id ="motorDiv">Motor
+      <button id = "moveMotorForward"> + </button>
+      <button id = "moveMotorBackward"> - </button>
+    </div>
     <div id ="zipOutput"></div>
     <script src="sketch.js"></script>
   </body>

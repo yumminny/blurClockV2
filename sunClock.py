@@ -3,7 +3,10 @@ from time import sleep
 from datetime import datetime, timedelta
 import datetime as dt
 import math
-import sys, json, numpy as np
+import sys
+
+for arg in sys.argv:
+    print(arg)
 
 options = RGBMatrixOptions()
 options.rows = 32
@@ -15,30 +18,6 @@ options.brightness = 100
 options.pwm_bits = 11
 options.hardware_mapping="adafruit-hat"
 
-#Read data from stdin
-#lines = sys.stdin.readlines()
-#return json.loads(lines[0])
-#def read_in():
-    #lines = sys.stdin.readlines()
-    #return json.loads(lines[0])
-    #print("reading data from server")
-
-#def main():
-    #get our data as an array from read_in()
-    #lines = read_in()
-
-    #create a numpy array
-    #np_lines = np.array(lines)
-
-    #use numpys sum method to find sum of all elements in the array
-    #lines_sum = np.sum(np_lines)
-
-    #return the sum to the output stream
-    #print lines_sum
-
-#start process
-#if __name__ == '__main__':
-    #main()
 
 matrix = RGBMatrix(options = options)
 print ("Matrix initialized")

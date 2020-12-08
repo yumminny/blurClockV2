@@ -81,6 +81,13 @@ io.on('connection', (socket) => {
       console.log('move motor forward');
       moveMotor = spawn("python3", ["./moveMotor.py", "1"]);
       
+      moveMotor.stdout.on("data", (data) => {
+        console.log(`dataOut: ${data}`);
+      });
+
+      moveMotor.stderr.on("data", (data) => {
+        console.log(`dataErr: ${data}`);
+      });
       
       moveMotor.on('error', (error) => {
         console.log(`error: ${error.message}`);
@@ -95,7 +102,15 @@ io.on('connection', (socket) => {
       console.log('move motor backwards');
       moveMotor = spawn("python3", ["./moveMotor.py", "0"]);
       
-      moveMotor.on('error', (error) => {
+      moveMotor.stdout.on("data", (data) => {
+        console.log(`dataOut: ${data}`);
+      });
+
+      moveMotor.stderr.on("data", (data) => {
+        console.log(`dataErr: ${data}`);
+      });
+
+      moveMotor.on("error", (error) => {
         console.log(`error: ${error.message}`);
       });
     
@@ -112,6 +127,7 @@ io.on('connection', (socket) => {
       }
       console.log('starting blur clock');
       blurClock = spawn("python3", ["./blurClock.py"]);
+
       blurClock.stdout.on("data", data => {
         console.log(`stdout: ${data}`);
       });
@@ -137,25 +153,18 @@ io.on('connection', (socket) => {
     //SunClock
     socket.on('startSunClock', async () => {
       console.log('start sun clock');
-      sunClock = spawn("python3", ["./sunClock.py"]);
+      sunClock = spawn("python3", ["./sunClock.py", dataOut.sunRise]);
+      console.log('sendig sunclock' + dataOut.sunRise)
 
-      //send python strings of sunset sunrise clock
-      var data = [1,2,3,4,5,6,7,8,9]
-      var dataString = "";
-
-      sunClock.stdout.on('data', function(data){
-        dataString += data.toString();
-        console.log(dataString);
+      sunClock.stdout.on("data", (data) => {
+        console.log(`dataOut: ${data}`);
       });
-      sunClock.stdout.on('end', function(){
-        console.log('sum of numbers=', dataString);
-      });
-      sunClock.stdin.write(JSON.stringify(data));
-      sunClock.stdin.end();
 
+      // sunClock.stderr.on("data", data => {
+      //   console.log(`stderr: ${data}`);
+      // });
 
-      
-      sunClock.on('error', (error) => {
+      sunClock.on("error", (error) => {
         console.log(`error: ${error.message}`);
       });
     

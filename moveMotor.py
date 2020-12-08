@@ -2,7 +2,10 @@ import sys
 import RPi.GPIO as GPIO
 from time import sleep
 
-direction = bool(sys.argv[1])
+direction = 1
+if sys.argv[1] == '0':
+    direction = 0
+print(direction)
 
 class StepperHandler():
 
@@ -27,8 +30,8 @@ class StepperHandler():
 
     def Step(self, stepsToTake, direction):
 
-        print("Step Pin: " + str(self.StepPin) + " Direction Pin: " + str(self.DirectionPin) + " Delay: " + str(self.Delay))
-        print("Taking " + str(stepsToTake) + " steps.")
+        #print("Step Pin: " + str(self.StepPin) + " Direction Pin: " + str(self.DirectionPin) + " Delay: " + str(self.Delay))
+        #print("Taking " + str(stepsToTake) + " steps.")
         # Set the direction
         GPIO.output(self.DirectionPin, direction)
 
