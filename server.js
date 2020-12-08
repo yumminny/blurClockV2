@@ -8,19 +8,25 @@ const serv = require('http').Server(app);
 const io = require('socket.io')(serv);
 
 var kill  = require('tree-kill');
-const {spawn} = require('child_process');
+// const {spawn} = require('child_process');
+var spawn = require('child_process').spawn
 var clock;
 var blurClock;
+var sunClock
 
 //global variables because I hate javascript and dont have time to do properly 
 var requestZip = '';
 var cityInfo = '';
 var responseSunRise = '';
 var responseSunSet= '';
+var dataOut = {};
 
-console.log('server listening on port 8080');
-//app runs on 8080
-serv.listen(8080);
+
+//app runs on 8080 locally or program finds ports that are open on browser
+serv.listen(process.env.PORT || 8080, () => {
+  console.log('server listening on port 8080');
+});
+
 //this makes p5 work and get sent back to localhost
 app.use(express.static("public"));
 //send back index when we localhost 
@@ -30,28 +36,26 @@ app.get('/',(req , res)=>{
 });
 
 //when socket is connection, do stuff
-io.on('connection', function (socket) {
+io.on('connection', (socket) => {
     console.log('connection made');
 
-    socket.on('getZipData', getZipData);
+    socket.on('getZipData', async (data) => {
+      console.log(data.zip);
+      requestZip = data.zip;
+      await makeSynchronouseRequest();
+      console.log(responseSunRise);
 
-    async function getZipData(data){
-        console.log(data.zip);
-        requestZip = data.zip;
-        await makeSynchronouseRequest();
-        console.log(responseSunRise);
-        var dataOut = {
-            sunRise  : responseSunRise,
-            sunSet  : responseSunSet,
-            city  : cityInfo,
-        }
-        console.log('sending dat back '+dataOut);
-        socket.emit('zipResult',dataOut);
-    }
+      dataOut = {
+          sunRise  : responseSunRise,
+          sunSet  : responseSunSet,
+          city  : cityInfo,
+      }
+      console.log('sending data back '+ dataOut.sunRise);
+      socket.emit('zipResult',dataOut);
+    });
 
-    socket.on('runClock', runClock);
-
-    async function runClock(){
+    //run clock
+    socket.on('runClock', async () => {
       console.log('running clock');
       clock = spawn("/home/aidan/rgbMatrix/rpi-rgb-led-matrix/examples-api-use/clock",["--led-no-hardware-pulse","--led-slowdown-gpio=4","--led-gpio-mapping=adafruit-hat-pwm","=-led-rows=32","--led-cols=64","--led-brightness=100","-f","/home/aidan/rgbMatrix/rpi-rgb-led-matrix/fonts/8x13.bdf","-d","%I:%M:%S","-y","10","-C","255,255,255"]);      
       clock.on('error', (error) => {
@@ -61,21 +65,19 @@ io.on('connection', function (socket) {
       clock.on("close", code => {
         console.log(`clock closed ${code}`);
       });
-    }
+    });
 
-    socket.on('killClock', killClock);
-    
-    async function killClock(){
+
+    socket.on('killClock', async () => {
       console.log('trying to kill clock by pid');
       if(clock.pid != null){
         console.log('killing clock:');
         kill(clock.pid);
       }
-    }
+    });
 
-    socket.on('moveMotorForward', moveMotorForward);
-
-    async function moveMotorForward(){
+    //Motor Calibration
+    socket.on('moveMotorForward', async () => {
       console.log('move motor forward');
       moveMotor = spawn("python3", ["./moveMotor.py", "1"]);
       
@@ -87,11 +89,9 @@ io.on('connection', function (socket) {
       moveMotor.on("close", code => {
         console.log(`done moving forward ${code}`);
       });
-    }
+    });
 
-    socket.on('moveMotorBackward', moveMotorBackward);
-
-    async function moveMotorBackward(){
+    socket.on('moveMotorBackward', async () => {
       console.log('move motor backwards');
       moveMotor = spawn("python3", ["./moveMotor.py", "0"]);
       
@@ -102,11 +102,10 @@ io.on('connection', function (socket) {
       moveMotor.on("close", code => {
         console.log(`done moving backwards ${code}`);
       });
-    }
+    });
 
-    socket.on('startBlurClock', startBlurClock);
-
-    async function startBlurClock(){
+    //BlurClock
+    socket.on('startBlurClock', async () => {
       //turn off the clock program if it was running during calibration
       if(clock != null && clock.pid != null){
         kill(clock.pid);
@@ -127,15 +126,50 @@ io.on('connection', function (socket) {
       blurClock.on("close", code => {
         console.log(`exit blur clock ${code}`);
       });
-    }
+    });
 
-    socket.on('endBlurClock', endBlurClock);
-
-    async function endBlurClock(){
+    socket.on('endBlurClock', async () => {
       if(blurClock != null && blurClock.pid != null){
         kill(blurClock.pid);
       }
-    }
+    });
+
+    //SunClock
+    socket.on('startSunClock', async () => {
+      console.log('start sun clock');
+      sunClock = spawn("python3", ["./sunClock.py"]);
+
+      //send python strings of sunset sunrise clock
+      var data = [1,2,3,4,5,6,7,8,9]
+      var dataString = "";
+
+      sunClock.stdout.on('data', function(data){
+        dataString += data.toString();
+        console.log(dataString);
+      });
+      sunClock.stdout.on('end', function(){
+        console.log('sum of numbers=', dataString);
+      });
+      sunClock.stdin.write(JSON.stringify(data));
+      sunClock.stdin.end();
+
+
+      
+      sunClock.on('error', (error) => {
+        console.log(`error: ${error.message}`);
+      });
+    
+      sunClock.on("close", code => {
+        console.log(`done sun clock ${code}`);
+      });
+    });
+
+    socket.on('endSunClock', async () => {
+      if(sunClock != null && sunClock.pid != null){
+        kill(sunClock.pid);
+      }
+    });
+
 });
 
 
